@@ -1,0 +1,67 @@
+using System;
+using System.Diagnostics; // For measuring execution time via high-resolution timers
+using System.Net.Http; // For network communication (I/O operations)
+using System.Text;
+using System.Text.Json;
+using System.Threading.Tasks;
+using System.Linq;
+using System.IO; // For File System access (Disk I/O)
+
+class Program
+{
+    // Creating a shared instance for network connections
+    private static readonly HttpClient client = new HttpClient();
+
+    static async Task Main(string[] args)
+    {
+        // Accessing command-line arguments passed by the OS shell
+        string algo = args[0];
+        string query = args[1];
+
+        // Sending a network request to generate vector embeddings
+        float[] queryVector = await GetEmbedding(query);
+
+        // Initializing a high-precision timer to measure search performance
+        Stopwatch sw = Stopwatch.StartNew();
+
+        int resultIndex = 0;
+        // Calling the vector search logic (Triggers Disk I/O: Seek and Read)
+        resultIndex = VectorSearch.Search(algo, queryVector, "vectors.bin");
+        sw.Stop();
+        Console.WriteLine(sw.ElapsedMilliseconds);
+
+        // Requesting the OS to read all lines from a text file (File System call)
+        string[] allDocs = File.ReadAllLines("documents.txt");
+        string retrievedText = allDocs[resultIndex];
+
+        // Sending the final prompt to the LLM (Network I/O)
+        await GenerateExplanation(retrievedText);
+    }
+
+    static async Task<float[]> GetEmbedding(string text)
+    {
+        var requestBody = new { model = "phi3", prompt = text };
+        var json = JsonSerializer.Serialize(requestBody);
+        var content = new StringContent(json, Encoding.UTF8, "application/json");
+        var response = await client.PostAsync("http://localhost:11434/api/embeddings", content);
+        var result = await response.Content.ReadAsStringAsync();
+        using var doc = JsonDocument.Parse(result);
+        return doc.RootElement.GetProperty("embedding").EnumerateArray().Select(x => x.GetSingle()).ToArray();
+    }
+
+    static async Task GenerateExplanation(string retrievedText)
+    {
+        var prompt = $"Please explain the following movie review based on my query: {retrievedText}";
+        var requestBody = new { model = "phi3", prompt = prompt, stream = false };
+        
+        var json = JsonSerializer.Serialize(requestBody);
+        var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+        var response = await client.PostAsync("http://localhost:11434/api/generate", content);
+        var result = await response.Content.ReadAsStringAsync();
+        
+        using var doc = JsonDocument.Parse(result);
+        string aiResponse = doc.RootElement.GetProperty("response").GetString();
+        Console.WriteLine(aiResponse);
+    }
+}
