@@ -1,19 +1,19 @@
 # AI-Powered Semantic Retrieval Pipeline
 
-A C# semantic retrieval application that combines vector embeddings, similarity-based document retrieval, and local LLM-generated responses.
+A C# semantic retrieval application that integrates vector embeddings, document retrieval, and local LLM-generated responses.
 
-The project demonstrates how a natural-language query can be transformed into a vector embedding, used to retrieve a semantically relevant document, and combined with the retrieved context to generate an AI-based response.
+This project was developed as part of an academic assignment and demonstrates how a natural-language query can be transformed into an embedding, passed through a vector-retrieval component, and combined with retrieved context to generate an AI-based response.
 
 ## How It Works
 
 The application follows a retrieval-augmented generation (RAG) style pipeline:
 
-1. The user provides a search algorithm and a natural-language query through command-line arguments.
-2. The query is converted into a vector embedding using a locally running Phi-3 model through Ollama.
-3. The embedding is passed to the vector-search component to retrieve the most relevant document.
-4. Search execution time is measured using `Stopwatch`.
-5. The corresponding movie review is loaded from the document dataset.
-6. The original query and retrieved review are sent to Phi-3 to generate a contextual response.
+1. The user provides a retrieval algorithm and a natural-language query through command-line arguments.
+2. The query is converted into a vector embedding using Phi-3 through a locally running Ollama instance.
+3. The embedding is passed to the course-provided vector-search component.
+4. Search execution time is measured using C# `Stopwatch`.
+5. The application retrieves the document corresponding to the search result.
+6. The original query and retrieved document are sent to Phi-3 to generate a contextual response.
 
 ```text
 User Query
@@ -22,9 +22,9 @@ Ollama / Phi-3
     ↓
 Query Embedding
     ↓
-Vector Search
+Vector Retrieval
     ↓
-Relevant Movie Review
+Relevant Document
     ↓
 Query + Retrieved Context
     ↓
@@ -35,20 +35,19 @@ Generated Response
 
 ## My Contribution
 
-This project was developed as part of an academic assignment.
+My implementation focused on the C# application layer that connects the different stages of the retrieval pipeline.
 
-The vector-search implementation and dataset infrastructure were provided as course scaffolding.
+I implemented:
 
-My implementation focused on building the C# application layer that connects the different components of the retrieval pipeline, including:
-
-- Processing command-line input
-- Generating query embeddings through the Ollama REST API
-- Integrating the provided vector-search component
-- Retrieving the corresponding document
-- Measuring search execution time
-- Sending the query and retrieved context to the LLM
-- Generating a contextual natural-language response
-- Handling asynchronous HTTP communication in C#
+- Command-line input handling and validation
+- Query embedding generation through the Ollama REST API
+- Integration with the provided vector-search component
+- Retrieval of the document corresponding to the search result
+- Search execution-time measurement using `Stopwatch`
+- Integration with Phi-3 for natural-language response generation
+- Passing both the original query and retrieved context to the LLM
+- Asynchronous HTTP communication using `HttpClient`
+- JSON serialization and response parsing
 
 ## Technologies
 
@@ -63,66 +62,68 @@ My implementation focused on building the C# application layer that connects the
 - File I/O
 - Asynchronous Programming
 
-## Vector Retrieval
+## Course-Provided Components
 
-The project uses a provided vector-search component that operates on 384-dimensional embeddings stored in a binary file.
+The original academic assignment included:
 
-The component supports different retrieval strategies and uses cosine similarity to compare the query embedding with stored document vectors.
+- A vector-search implementation
+- A movie-review dataset
+- Precomputed document vectors
 
-My application integrates this component into the end-to-end retrieval and generation workflow.
+These components were provided as course infrastructure and are not included in this repository.
 
-## Dataset
+This repository focuses specifically on the application and integration layer that I implemented.
 
-The application works with a collection of movie reviews.
+## Embedding Generation
 
-Each document is associated with a stored vector representation. After the vector-search component identifies the most relevant vector, the application retrieves the corresponding review from the document collection.
+The application communicates with a locally running Ollama instance using HTTP.
+
+A user query is sent to the embedding endpoint and converted into a vector representation using Phi-3. The resulting embedding is then passed to the provided retrieval component.
+
+## Retrieval and Response Generation
+
+After the retrieval component identifies the most relevant document, the application loads the corresponding text from the dataset.
+
+The retrieved document and the user's original query are then combined into a prompt and sent to Phi-3 through Ollama's generation API.
+
+This creates an end-to-end flow from a natural-language query to semantic retrieval and an LLM-generated response.
 
 ## Performance Measurement
 
 The application measures the execution time of the vector-search stage using C#'s `Stopwatch`.
 
-This makes it possible to observe the performance characteristics of different retrieval strategies while keeping embedding generation and LLM response generation outside the measured search interval.
+The measurement focuses specifically on retrieval time, excluding embedding generation and LLM response generation.
 
-## Running the Project
-
-The application expects Ollama to be running locally with the required Phi-3 model available.
-
-Example:
-
-```bash
-dotnet run <algorithm> "your search query"
-```
-
-The application will:
-
-1. Generate an embedding for the query.
-2. Perform vector retrieval.
-3. Print the search execution time.
-4. Retrieve the relevant movie review.
-5. Generate an AI response using the retrieved context.
-
-## Project Structure
+## Repository Structure
 
 ```text
 ├── Program.cs
-├── VectorSearch.cs
 ├── RagProject.csproj
-├── documents.txt
-└── vectors.bin
+├── .gitignore
+└── README.md
 ```
 
-`Program.cs` contains the application and integration logic implemented as part of my work.
+`Program.cs` contains my implementation of the application and integration logic.
 
-`VectorSearch.cs` and the dataset/vector infrastructure were provided as part of the academic assignment.
+The course-provided search implementation, dataset, and precomputed vectors are intentionally excluded from this repository.
+
+## Running the Project
+
+The complete original academic environment requires the course-provided vector-search component, dataset, and precomputed vectors, which are not distributed in this repository.
+
+The application also requires a locally running Ollama instance with the required Phi-3 model.
+
+Because the course-provided components are excluded, this repository is intended primarily to demonstrate my implementation and integration work rather than serve as a standalone distribution of the full academic assignment.
 
 ## Key Takeaways
 
-This project provided hands-on experience with:
+Through this project, I gained hands-on experience with:
 
-- Integrating local LLMs into a C# application
+- Integrating a local LLM into a C# application
 - Working with vector embeddings and semantic retrieval
 - Communicating with AI services through REST APIs
-- Building an end-to-end retrieval and generation pipeline
-- Working with file and network I/O
-- Measuring search performance
-- Using asynchronous programming in .NET
+- Connecting retrieval and generation components
+- Asynchronous programming in .NET
+- File and network I/O
+- Measuring retrieval performance
+- Building a RAG-style application pipeline
