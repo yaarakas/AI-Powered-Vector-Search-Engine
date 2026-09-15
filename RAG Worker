@@ -35,7 +35,7 @@ class Program
         string retrievedText = allDocs[resultIndex];
 
         // Sending the final prompt to the LLM (Network I/O)
-        await GenerateExplanation(retrievedText);
+        await GenerateExplanation(query, retrievedText);
     }
 
     static async Task<float[]> GetEmbedding(string text)
@@ -49,9 +49,9 @@ class Program
         return doc.RootElement.GetProperty("embedding").EnumerateArray().Select(x => x.GetSingle()).ToArray();
     }
 
-    static async Task GenerateExplanation(string retrievedText)
+    static async Task GenerateExplanation(string query, string retrievedText)
     {
-        var prompt = $"Please explain the following movie review based on my query: {retrievedText}";
+        var prompt = $"""User query: {query} Retrieved movie review: {retrievedText} Based on the retrieved review, provide a relevant response to the user's query.""";
         var requestBody = new { model = "phi3", prompt = prompt, stream = false };
         
         var json = JsonSerializer.Serialize(requestBody);
